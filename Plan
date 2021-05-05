@@ -1,0 +1,61 @@
+1. Main
+If run with no options uses details in main.py.
+If have different username/password for each device type you must set the usernames in the script, cant do with run time argument (-u)
+If run with -u flag it will use the same username/password fro both CKP and ASAs
+If either asa_dict or ckp_dict is empty it wont prompt for password for that device type
+
+2. Login
+Uses try/ except so only fails it has tried all devices and one or more of them failed
+
+ASA Errors:
+Authentication failure - Means the username or password is wrong
+Connection to device timed-out - means no SSH connectivty to the device
+
+CKP Errors:
+'Unable to connect to server. Please make sure that the server is up and running. - Means username wrong
+'Authentication to server failed' - Means passwor wrong
+403 Forbidden -  either not enabled or trying agasint HA standby device (don't have permission to access /web_api/login)
+Excpetion error: Connection attempt timed out (no responce code)
+
+!!! ERROR - err_login_failed - Authentication to server failed. Check password is correct. ckp:10.250.10.20
+
+!!! ERROR - 403 Forbidden: Check API service is enabled or is not a standby device. ckp:10.250.20.20
+
+!!! ERROR - generic_server_initializing - Unable to connect to server. Check username is correct for ckp 10.250.10.20
+
+!!! ERROR - HTTPSConnectionPool(host='10.250.1.20', port=443): Max retries exceeded with url: /web_api/login (Caused by NewConnectionError('<urllib3.connection.VerifiedHTTPSConnection object at 0x0000020CE7669988>: Failed to establish a new connection: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond'))
+
+!!! ERROR - generic_err_invalid_syntax - Payload is not valid
+-Something went wrong when running the command 'show-access-layers' and payload '' on 10.250.10.20
+
+
+
+TODO
+1. CKP -Test negate source and negate service -
+Probably got to build checkponts at home to properly check with a few devices and all rul permitions
+
+Test at work
+
+3. Write unit tests
+
+4. Template and format for adding other devices to this
+What needs adding where in the script
+
+5. See what happens if disable failfast if one device connection fails
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
