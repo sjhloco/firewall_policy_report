@@ -9,7 +9,7 @@ config:
 
   # Specify the current working directory path
   # the default is the current working directory path
-  cwd: /Users/mucholoco/Documents/Coding/Python/code/firewall_access_rule_report
+  cwd: /Users/mucholoco/Documents/Coding/Python/code/firewall_policy_report
 
   # Export additional ENV variables
   env:
