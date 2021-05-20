@@ -14,34 +14,32 @@ The idea behind this project is to have a framework built in a modular manner to
 
 ## Output
 
-Two worksheets are created per device, a standard ACL and expanded ACL. Each XL cell only contains one element, an object (host, network, service, etc) or group of objects.
-
-The size of the standard ACL worksheet will depend on the policy configuration. If groups are not used then every entry need expanding for all the different 5 tuple permutations. The expanded ACL expands the object groups and replaces the object names for the actual IP addresses. For example, on an ASA the standard ACL is `show run access-list` and the expanded ACL is `show access-list`.
+Two worksheets are created per device, a standard ACL and expanded ACL. Each XL cell only contains one element, an object (host, network, service, etc) or group of objects. The size of the standard ACL worksheet will depend on the policy configuration. If groups are not used then every entry need expanding for all the different 5 tuple permutations. The expanded ACL expands the groups and replaces the object names for the actual IP addresses. For example, on an ASA the standard ACL is `show run access-list` and the expanded ACL is `show access-list`.
 
 <img width="1322" alt="Screenshot 2021-05-20 at 20 08 54" src="https://user-images.githubusercontent.com/33333983/119035236-426c4180-b9a7-11eb-8e1c-cc37d7097ac7.png">
 
 ## Installation and Prerequisites
 
-Clone the repository and create a virtual environment:
+Clone the repository and create a virtual environment
 
 ```bash
 git clone https://github.com/sjhloco/firewall_policy_report.git
-python -m venv mkdir ~/venv/acl_report/
+python -m venv ~/venv/acl_report/
 source ~/venv/acl_report/bin/activate
 ```
 
-Install the packages required to run this script (netmiko, requests, rich, openpyxl and pytest).
+Install the packages (netmiko, requests, rich, openpyxl and pytest)
 
 ```bash
 pip install -r firewall_policy_report/requirements.txt
 ```
 
-### ASA
+#### ASA
 
 Enable SSH access over the interface and from networks that the script will be run
 `ssh xxxxx`
 
-### Checkpoint
+#### Checkpoint
 
 Enable the API on the manger under *Manage & Settings >> Blades >> Management API*, allow *'All IP addresses'* and push the policy. Finally from the manager CLI restart the API process `api restart`
 
