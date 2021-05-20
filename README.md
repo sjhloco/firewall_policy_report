@@ -36,12 +36,12 @@ pip install -r firewall_policy_report/requirements.txt
 
 #### ASA
 
-Enable SSH access over the interface and from networks that the script will be run
-`ssh xxxxx`
+Enable SSH access over the interface and from networks that the script will be run\
+`ssh <network> <mask> <interface>`
 
 #### Checkpoint
 
-Enable the API on the manger under *Manage & Settings >> Blades >> Management API*, allow *'All IP addresses'* and push the policy. Finally from the manager CLI restart the API process `api restart`
+Under *Manage & Settings >> Blades >> Management API* enable the API and allow  *'All IP addresses'* and push the policy. Finally from the manager CLI restart the API process `api restart`
 
 ## Input File
 
