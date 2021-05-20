@@ -127,14 +127,16 @@ pytest test/test_acl_report.py::test_ckp_format_data -v
 The first section of the script is the customisable default values. Can change the default directory location (where to looks for the input file and saves the report), the input file name, the report name and the XL sheet header names (including column widths).
 
 ```yaml
-directory = expanduser("~")
+directory = os.path.dirname(__file__)
 report_name = 'ACLreport_' + date.today().strftime('%Y%m%d')
-header = {'Policy/ACL Name':45, 'Line Number':17, 'Access':11, 'Protocol':16, 'Source Address':31, 'Source Service':14, 'Destination Address':31, 'Destination Service':35, 'Hit Count':14, 'Date Last Hit':17, 'Time Last Hit':17, 'State':10}
+input_file = 'input.yml'
+header = {'Policy/ACL Name':25, 'Line Number':17, 'Access':18, 'Protocol':12, 'Source Address':23, 'Source Service':14, 'Destination Address':23,
+          'Destination Service':26, 'Hit Count':14, 'Date Last Hit':17, 'Time Last Hit':17, 'State':10}
 ```
 
 ## Adding new Firewall Types
 
-The firewall types are in individual python files that are dynamically imported into the *main.py* using ***__import__***. The beauty of this is that if you do add another firewall type the only thing that needs changing in *main.py* is adding it to the list `fw_types = ['asa', 'ckp']`, everything else is taken care of automatically.
+The firewall types are in individual python files that are dynamically imported into the *main.py* using `__import__`. The beauty of this is that if you do add another firewall type the only thing that needs changing in *main.py* is adding it to the list `fw_types = ['asa', 'ckp']`, everything else is taken care of automatically.
 
 The new firewall type python file has to have the following functions and arguments with each function returning data in the desired format.
 
