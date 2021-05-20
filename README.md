@@ -151,8 +151,7 @@ Uses the SID to connect to the device and gather the firewall rules returning ba
 ***return:*** *acl_brief, acl_expanded*
 
 **format_acl(fw, acl_brief, acl_expanded)**\
-Takes the ACL data gathered from the devices and runs it through various other functions to normalise it and produce two lists, *standard_acl* and *expanded_acl* (object/group names converted to IP addresses/networks). Each list element is an ACE in the following format (ready to be made into XL columns).\
-`[name, num, permit/deny, protocol, src_ip/pfx, src_port, dst_ip/pfx, dst_port, hitcnt, last_hit_date, last_hit_time, state]`\
+Takes the ACL data gathered from the devices and runs it through various other functions to normalise it and produce two lists, *standard_acl* and *expanded_acl* (object/group names converted to IP addresses/networks). Each list element is an ACE in the following format (ready to be made into XL columns). `[name, num, permit/deny, protocol, src_ip/pfx, src_port, dst_ip/pfx, dst_port, hitcnt, last_hit_date, last_hit_time, state]`\
 ***return:*** *{fwip_acl: [standard_acl], fw_ip_exp_acl: [expanded_acl]}*
 
 *new_fw_type_template.py* is a skelton template of these functions that can be used for creating new firewall types.
