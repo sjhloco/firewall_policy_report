@@ -45,7 +45,7 @@ Under *Manage & Settings >> Blades >> Management API* enable the API, allow *'Al
 
 ## Input File
 
-Each firewall IP address or hostname is defined in a list under a dictionary for that firewall type. The username and/or password are hierarchical and can be set globally for all firewalls, for each type of firewall or for each individual firewall. They only needs defining once and are completely independent of each other. Individual firewall username and/or password override firewall type and firewall type override global settings.
+Each firewall IP address or hostname is defined in a list under a dictionary for that firewall type. The username and/or password are hierarchical and can be set globally for all firewalls, for each type of firewall or for each individual firewall. They only need defining once and are completely independent of each other. Individual firewall username and/or password override firewall type and firewall type override global.
 
 ```yaml
 user: global_username
@@ -60,24 +60,32 @@ asa:
     user: fw_username
     pword: fw_password
 ckp:
+  user: ckp_username
+  pword: ckp_password
   fw:
   - ip_name: 10.10.30.1
+    user: fw_username
+    pword: fw_password
   - ip_name: dc1_ckp
 ```
 
 ## Usage
 
-If the script is run without any arguments it uses the default settings that are variables set at the start of *main.py* script.
-
-```python
-python main.py
-```
+If the script is run without any arguments it uses the default settings defined variables at the start of *main.py*.
 
 - ***input_file:*** Uses an input file called **input.yml**
 - ***report_name:*** Creates a report called **ACLreport_yyyymmdd**
 - ***directory:*** It looks for the input file and saves the report in the current directory the script is run from
 
-The script can be run with any or all of these flags to override the default settings. It is possible to specify global username at runtime which causes the script to prompt the user for a global password.
+```python
+python main.py
+```
+
+![demo](https://user-images.githubusercontent.com/33333983/119037187-8eb88100-b9a9-11eb-9417-106d21eb7591.gif)
+
+During runtime if any of the connections to a firewall fails all other firewall connections will be closed and the script stopped.
+
+Any or all of these default settings can be overiden at run time using flags. If the global username is specified (-u or --user) the global password will be prompted for.
 
 ```python
 -i or --input = Input file holding firewall IPs/hostnames and credentials
@@ -89,10 +97,6 @@ The script can be run with any or all of these flags to override the default set
 ```python
 python3 main.py -i dc1_fws.yml -u onfly_global_username -n custom_report_name -l /location/for/input_file/and/report/
 ```
-
-!!! video of running the report !!!
-
-During runtime if any of the connections to a firewall fails all other firewall connections will be closed and the script stopped.
 
 ## Caveats
 
