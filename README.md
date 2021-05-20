@@ -40,7 +40,6 @@ Enable SSH access over the interface and from networks that the script will be r
 `ssh <network> <mask> <interface>`
 
 #### Checkpoint
-
 Under *Manage & Settings >> Blades >> Management API* enable the API, allow *'All IP addresses'* and push the policy. Finally from the manager CLI restart the API process `api restart`
 
 ## Input File
@@ -108,8 +107,7 @@ Only extended ACLs are supported. Including standard ACLs wont break the script 
 
 #### Checkpoint
 
-Does not support individual ACE hit counts for expanded groups so the value for each ACE from an expanded group is the hit count for the overall rule.\
-The expanded ACL negated source and destination range produce a blank output in the API call so the standard ACL values are used for these cells. The expanded ACL does not expand application groups
+Does not support individual ACE hit counts for expanded groups so the value for each ACE from an expanded group is the hit count for the overall rule. The expanded ACL negated source and destination range produce a blank output in the API call so the standard ACL values are used for these cells. The expanded ACL does not expand application groups
 
 ## Unit testing
 
