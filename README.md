@@ -71,7 +71,7 @@ ckp:
 
 ## Usage
 
-If the script is run without any arguments it uses the default settings defined variables at the start of *main.py*.
+If the script is run without any arguments it uses the default settings (variables) defined at the start of *main.py*.
 
 - ***input_file:*** Uses an input file called **input.yml**
 - ***report_name:*** Creates a report called **ACLreport_yyyymmdd**
@@ -82,8 +82,6 @@ python main.py
 ```
 
 ![demo](https://user-images.githubusercontent.com/33333983/119037187-8eb88100-b9a9-11eb-9417-106d21eb7591.gif)
-
-During runtime if any of the connections to a firewall fails all other firewall connections will be closed and the script stopped.
 
 Any or all of these default settings can be overiden at run time using flags. If the global username is specified (-u or --user) the global password will be prompted for.
 
@@ -97,6 +95,8 @@ Any or all of these default settings can be overiden at run time using flags. If
 ```python
 python3 main.py -i dc1_fws.yml -u onfly_global_username -n custom_report_name -l /location/for/input_file/and/report/
 ```
+
+During runtime if any of the connections to a firewall fails all other firewall connections will be closed and the script stopped.
 
 ## Caveats
 
