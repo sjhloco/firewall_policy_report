@@ -100,17 +100,16 @@ During runtime if any of the connections to a firewall fails all other firewall 
 
 ## Caveats
 
-The *Rich* package is used to colourise the CLI output. Windows classic terminal is limited to 16 colors so Windows users would be better off using the new Windows Terminal if you want  full colorised CLI output. It is purely cosmetic, not essential.
+The *Rich* package is used to colourise the CLI output. Windows classic terminal is limited to 16 colors so Windows users would be better off using the new Windows Terminal if you want full colorised CLI output. It is purely cosmetic, not essential.
 
-### ASA
+#### ASA
 
-Only extended ACLs are supported. Including standard ACLs wont break the script, they will just be ignored like remark statements.
+Only extended ACLs are supported. Including standard ACLs wont break the script but will just be ignored.
 
-### Checkpoint
+#### Checkpoint
 
-Does not support individual ACE hit counts for expanded objects so the value for each ACE from an expanded group is the hit count for the overall rule.\
-The expanded ACL negated source and destination range produce a blank output in the API call so the standard ACL values are used for these cells.
-The expanded ACL does not expand application groups
+Does not support individual ACE hit counts for expanded groups so the value for each ACE from an expanded group is the hit count for the overall rule.\
+The expanded ACL negated source and destination range produce a blank output in the API call so the standard ACL values are used for these cells. The expanded ACL does not expand application groups
 
 ## Unit testing
 
@@ -127,7 +126,7 @@ pytest test/test_acl_report.py::test_ckp_format_data -v
 
 The first section of the script is the customisable default values. Can change the default directory location (where to looks for the input file and saves the report), the input file name, the report name and the XL sheet header names (including column widths).
 
-```json
+```yaml
 directory = expanduser("~")
 report_name = 'ACLreport_' + date.today().strftime('%Y%m%d')
 header = {'Policy/ACL Name':45, 'Line Number':17, 'Access':11, 'Protocol':16, 'Source Address':31, 'Source Service':14, 'Destination Address':31, 'Destination Service':35, 'Hit Count':14, 'Date Last Hit':17, 'Time Last Hit':17, 'State':10}
