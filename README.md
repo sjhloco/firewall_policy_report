@@ -140,24 +140,24 @@ The new firewall type python file has to have the following functions and argume
 
 **login(fw, user, pword)**\
 Uses `try/except` to open a connection to the firewall. If the connection is successful it returns the tuple *(True, SID)* with the SID (session ID) used for future operations to run commands on the firewall. If the connection fails it returns the tuple *(False, err_msg)* with the message being a description of the error. `True` and `False` are used by *main.py* to determine whether the connection was successful (True) or not (False). Any connection failure causes all other connections to be closed and the script to gracefully fail.\
-***Return:*** *(True, sid) or (False, error_message)*
+***return:*** *(True, sid) or (False, error_message)*
 
 **logoff(fw, sid)**\
 Gracefully closes connections either at the end of the script or to close all connections if any firewall connection fails.\
-***Return:*** *Nothing*
+***return:*** *nothing*
 
 **get_acls(fw, sid)**\
-Uses the SID (session ID) to connect to the device and run commands to get the ACL content returning back two lists to *main.py*, *acl_brief* and *acl_expanded*. What is in these lists depends on the firewall type capabilities. For example, ASA is ACL hashes and the extended ACl whereas Checkpoint is standard ACL and ACL with expanded ranges. These are firewall type specific at this point as are only used in next function.\
-***Return:*** *acl_brief, acl_expanded*
+Uses the SID to connect to the device and gather the firewall rules returning back two lists, *acl_brief* and *acl_expanded*. What is in these lists depends on the capabilities of the firewall type. For example, ASA is the ACL hashes and extended ACl whereas Checkpoint is the standard ACL and ACL with expanded ranges.\
+***return:*** *acl_brief, acl_expanded*
 
 **format_acl(fw, acl_brief, acl_expanded)**\
-Takes the ACL data gathered from the devices and runs it through various other functions to normalise it and produce two lists, ACL and Expanded_ACL (object/group names converted to IP addresses/networks). Each each list element is an ACE in the following format ready to be made into columns in the XL sheet.\
+Takes the ACL data gathered from the devices and runs it through various other functions to normalise it and produce two lists, *standard_acl* and *expanded_acl* (object/group names converted to IP addresses/networks). Each list element is an ACE in the following format (ready to be made into XL columns).\
 `[name, num, permit/deny, protocol, src_ip/pfx, src_port, dst_ip/pfx, dst_port, hitcnt, last_hit_date, last_hit_time, state]`\
-***Return:*** *{fwip_acl: [non_expanded_acl], fw_ip_exp_acl: [expanded_acl]}*
+***return:*** *{fwip_acl: [standard_acl], fw_ip_exp_acl: [expanded_acl]}*
 
-*new_fw_type_template.py* is a skelton template of these functions for creating new firewall types.
+*new_fw_type_template.py* is a skelton template of these functions that can be used for creating new firewall types.
 
-## Future
+## Future Plans
 
-Should probably the unit tests so doing more indvidual functions rather than the overall function
-Add firepower report. Need to decide if using API or SSH to get
+Add firepower report to the report. Need to decide whether to use SSH or API to gather the information, hopefully the formatting will be simialr to ASAs.\
+Should probably redo the the unit tests to test the indvidual functions rather than the overall outcome.
