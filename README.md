@@ -16,7 +16,7 @@ The idea behind this project is to have a framework built in a modular manner to
 
 Two worksheets are created per device, a standard ACL and expanded ACL. Each XL cell only contains one element, an object (host, network, service, etc) or group of objects.
 
-The size of the standard ACL worksheet will depend on the policy configuration. If groups are not used then every entry needs for all the different 5 tuple permutations. The expanded ACL expands groups and replaces object names for the actual IP addresses. For example, on an ASA standard ACL is `show run access-list` and expanded is `show access-list`
+The size of the standard ACL worksheet will depend on the policy configuration. If groups are not used then every entry need expanding for all the different 5 tuple permutations. The expanded ACL expands the object groups and replaces the object names for the actual IP addresses. For example, on an ASA the standard ACL is `show run access-list` and the expanded ACL is `show access-list`.
 
 <img width="1324" alt="Screenshot 2021-05-20 at 18 42 25" src="https://user-images.githubusercontent.com/33333983/119028192-15b42c00-b99f-11eb-9129-c9a4c6f4706b.png">
 
