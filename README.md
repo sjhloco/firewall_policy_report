@@ -1,20 +1,18 @@
 # Firewall Policy Report
 
-Gathers firewall access polices nd produces an XL sheet report of the policy rules and their usage.
+Connects to the firewalls and gathers the access-lists to produce an Excel worksheet report of the policy rules and their usage (hits).
 
-The idea behind this project is to have a framework (engine) to create the report based on a standard input data model making it easy to expand on the supported firewalls. Each firewall type has a separate python script to log into the device, scrape the data and do the number crunching to return the data model.
+The idea behind this project is to have a framework built in a modular manner to create the report based on a standard input data model. By building it in this manner the specific firewall type configuration is abstracted from the main script making it easier to add different firewall vendors in the future. Each firewall type has a separate python script to log into the device, scrape the data and do the number crunching to return the data model.
 
-- Supports ASA (9.xx), Checkpoint (R80.20)
-- Uses an input yaml file containing dictionaries of firewalls with hierarchical username and password
+- Supports ASA (9.xx), Checkpoint (R80.20). ASAs use SSH (*Netmiko*) and Checkpoints API (*Requests*) to gather the information
+- The input yaml file contains dictionaries of the firewall types with hierarchical username and passwords
 - Each device has an XL tab for the ACL and expanded ACL (expands group objects)
-- Colourisation of rules (XL rows) that have been hit in the last day, 7 days and 30 days as well as inactive ACEs
-- Total hit counts for each ACE and the last time the rule was hit
+- Colourisation of rules (XL rows) that have been hit in the last day, last 7 days and last 30 days as well as inactive ACEs
+- Total hit counts for each ACE and the last time the rule was hit (see Checkpoint caveat)
 - XL header filters to aid with drilling down further in larger rule bases
-- Supports IPv4 only and the majority of rule combinations
+- Supports IPv4 only
 
-!!!!IMAGE!!!!
-
-ASAs use SSH (*Netmiko*) and Checkpoints use API (*Requests*) to gather the information. I don't have sufficient knowledge of other firewall platforms to expand this further at present, however it has been built in a modular manner to allow for easy expansion. I will be looking to add Palo Altos at some point dependant and possibly Firepower.
+<img width="1324" alt="Screenshot 2021-05-20 at 18 42 25" src="https://user-images.githubusercontent.com/33333983/119028192-15b42c00-b99f-11eb-9129-c9a4c6f4706b.png">
 
 ## Output
 
