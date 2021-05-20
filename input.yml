@@ -1,18 +1,22 @@
-#  Global password used for all devices, can also be set at run time
-# user: glob_user
-# pword: glob_pass
+#### Global password used for all devices, can also be set at run time ####
+user: glob_user
+pword: glob_pass
 
 asa:
-  # Overrides global password for all ASAs
-  # user: asa_user
-  # pword: asa_pword
-  # List of ASAs, any password set here would override global and ASA passwords
+  ### Overrides global password for all ASAs ###
+  user: asa_user
+  pword: asa_pass
+  ## List of ASAs, any password set here would override global and ASA passwords ##
   fw:
-  # - ip_name: dc1_asa
-    - ip_name: 10.10.20.1
-    # user: test
-    # pword: test123
-# ckp:
-#   # List of Checkpoints, any password set here would override global and CKP passwords
-#   fw:
-#   - ip_name: 1.1.1.1
+    - ip_name: dc1-asa
+      user: fw_user
+      pword: fw_pass
+    - ip_name: dc2-asa
+
+ckp:
+  ### Overrides global password for all Checkpoints ###
+  user: ckp_user
+  pword: ckp_pword
+  ## List of Checkpoints, any password set here would override global and CKP passwords ##
+  fw:
+  - ip_name: dc1-ckp

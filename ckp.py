@@ -4,6 +4,7 @@ import requests
 import urllib3
 from ipaddress import ip_network
 from datetime import datetime
+import re
 urllib3.disable_warnings()
 
 
@@ -15,22 +16,32 @@ def login(fw, user, pword):
         payload = {'user':user, 'password': pword}
         request_headers = {'Content-Type' : 'application/json'}
         res = requests.post(url,data=json.dumps(payload), headers=request_headers, verify=False)
-        # If the API call is successful the returns the SID which is used in subsequent requests
-        if res.status_code == 200:
-            return (True, res.json()['sid'])
-        # Based on the HTTP response from the Checkpoint feeds back custom error messages to the user
-        elif res.status_code == 400:
-            return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - {} - {} Check password is correct for {}".format(res.json()["code"], res.json()["message"], fw))
-        elif res.status_code == 403:
-            return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - 403 Forbidden: Check API service is enabled or it is not the standby manager {}".format(fw))
-        elif res.status_code == 500:
-            return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - {} - {}Check username is correct for {}".format(res.json()["code"], res.json()["message"].split('P')[0], fw))
-        # Catchall for all other response codes with the generic checkpoint error message
-        else:
-            return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - {} {} {}".format(res.json()["code"], res.json()["message"], fw))
+
+        # Stops errors by catching any response completely unknown responce not in JSON format as all error messages use it
+        try:
+            res.json()
+            # If the API call is successful the returns the SID which is used in subsequent requests
+            if res.status_code == 200:
+                return (True, res.json()['sid'])
+            # Based on the HTTP response from the Checkpoint feeds back custom error messages to the user
+            elif res.status_code == 400:
+                print(res.json())
+                return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - {} - {} Check username and password is correct for {}".format(res.json()["code"], res.json()["message"], fw))
+            elif res.status_code == 403:
+                return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - 403 Forbidden: Check API service is enabled or it is not the standby manager {}".format(fw))
+            elif res.status_code == 500:
+                return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - {} - {}Check username is correct for {}".format(res.json()["code"], res.json()["message"].split('P')[0], fw))
+            # Catchall for all other response codes with the generic checkpoint error message
+            else:
+                return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - {} {} {}".format(res.json()["code"], res.json()["message"], fw))
+        # Unknown error which doesnt return JSON
+        except:
+            error = re.sub(r'<.*?>', '', str(list(res))).replace("b'", "").replace("\\n", " ").replace("[  ", "").replace(".  ']", "")
+            return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - {} for {}".format(error, fw))
     # Handles exceptions where the checkpoint is unreachable as wouldn't get a HTTP response status back
     except requests.exceptions.RequestException as e:
         return (False, "\u26A0\uFE0F  [yellow]WARNING[/yellow] - {}".format(e))
+
 # Used to close all sessions
 def logoff(fw, sid):
     api_call(fw, "logout", {}, sid)
@@ -119,11 +130,11 @@ def categorize_obj(object):
         elif obj['type'] == 'service-other':
             normalized.append('other_' + obj['name'])
         elif obj['type'] == 'service-group':
-            normalized.append('svc-grp_grp_' + obj['name'])
+            normalized.append('svc-grp_' + obj['name'])
         elif obj['type'] == 'application-site':
             normalized.append('app_' + obj['name'])
         elif obj['type'] == 'application-site-group':
-            normalized.append('app-grp_grp_' + obj['name'])
+            normalized.append('app-grp_' + obj['name'])
         # Other object types
         elif obj['type'] == 'Internet' or obj['type'] == 'CpmiAnyObject':
             normalized.append(obj['name'])
@@ -171,10 +182,12 @@ def normalise_ip(ip_element):
 # NEGATE: Adds NOT to any source, destination, or services that are negated
 def negate(ace):
     temp_svc, temp_dst, temp_src = ([] for i in range(3))
-    # If service is negated create a new list where all services start with NOT_ and replace original list
+    # If service is negated splits protocol and service, adds NOT_ to the svc and rejoins
     if ace[13] == True:
-        for svc in ace[7]:
-            temp_svc.append('NOT_' + svc)
+        for prot_svc in ace[7]:
+            prot_svc = prot_svc.split('_')
+            prot_svc[1] = 'NOT_' + prot_svc[1]
+            temp_svc.append('_'.join(prot_svc))
         ace[7] = temp_svc
     # If destination is negated create a new list where all dst start with NOT_ and replace original list
     if ace[12] == True:
@@ -192,26 +205,33 @@ def negate(ace):
 # 3. ENGINE: Feeds ACL data and uses functions to produce standardized data model of ACL and expanded ACL
 def format_acl(fw, acl_brief, acl_expanded):
     acl, acl_exp, final_acl = ([] for i in range(3))
-
     #3a. Loops through each section and set of 500 rules (non-expanded ACEs) to create new list of lists of only the fields required
     for policy in acl_brief:
-        for section in policy['rulebase']:
-            for rule in section['rulebase']:
-                acl.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source'], 'any_port',
-                                        rule['destination'], rule['service'], rule['hits']['value'], rule['hits'].get('last-date'),
-                                        rule['enabled'], rule['source-negate'], rule['destination-negate'], rule['service-negate']])
-
+        # for section in policy['rulebase']:
+            # for rule in section['rulebase']:
+        for rule in policy['rulebase']:
+            # For nested inline policies replaces action with name of nested policy
+            if rule.get('inline-layer') != None:
+                rule['action']['name'] = 'POLICY_' + rule['inline-layer']['name']
+            acl.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source'], 'any_port',
+                                    rule['destination'], rule['service'], rule['hits']['value'], rule['hits'].get('last-date'),
+                                    rule['enabled'], rule['source-negate'], rule['destination-negate'], rule['service-negate']])
     #3b. Loops through each section and set of 20 rules (expanded ACEs) to create new list of lists of only the fields required
     for policy in acl_expanded:
-        for section in policy['rulebase']:
-            for rule in section['rulebase']:
-                acl_exp.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source-ranges'],
-                                        'any_port', rule['destination-ranges'], rule['service-ranges'], rule['hits']['value'],
-                                        rule['hits'].get('last-date'), rule['enabled']])
+        # for section in policy['rulebase']:
+            # for rule in section['rulebase']:
+        for rule in policy['rulebase']:
+            # For nested inline policies replaces action with name of the nested policy
+            if rule.get('inline-layer') != None:
+                rule['action']['name'] = 'POLICY_' + rule['inline-layer']['name']
+            acl_exp.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source-ranges'],
+                                    'any_port', rule['destination-ranges'], rule['service-ranges'], rule['hits']['value'],
+                                    rule['hits'].get('last-date'), rule['enabled']])
 
     # Loops though both rulebases to normalise the data (categorize object names, simplify ranges, timestamp, etc)
     for acl_item in [acl, acl_exp]:
         for ace in acl_item:
+
             # 3c.ACL: For source, destination and service objects add an identifier (hst, net, grp, etc)
             if len(ace) == 14:
                 ace[4] = categorize_obj(ace[4])
@@ -227,30 +247,25 @@ def format_acl(fw, acl_brief, acl_expanded):
             else:
                 ace[4] = normalise_ip(ace[4])
                 ace[6] = normalise_ip(ace[6])
-                # 3c. If has TCP and UDP range is represented as 'ANY' in the rulebase
+                # If has TCP and UDP range is represented as 'ANY' in the rulebase
                 dst_svc = []
+                temp_svc = []
                 if len(ace[7]['tcp']) != 0 and len(ace[7]['udp']) != 0:
                     dst_svc.append('any_any')
-                # 3d. Adds identifier to ICMP, protocol, application or group objects
+                # Anything else adds identifier to ICMP, protocol, application or group objects
                 if len(ace[7]['others']) != 0:
                     dst_svc.extend(categorize_obj(ace[7]['others']))
+                # For excludes source. Needs to go through negate function later so adds negate boolean to ace (element 12 to 14)
+                elif len(ace[7]['excluded-others']) != 0:
+                    dst_svc.extend(categorize_obj(ace[7]['excluded-others']))
+                    ace.extend([False, False, True])
                 ace[7] = dst_svc
 
-            # 3e. ALL: Splits the dst_svc into protocol and service
-            for dst_svc in ace[7]:
-                dst_svc = dst_svc.split('_')
-                ace[3] = dst_svc[0]
-                # Needed incase object names have underscore in them (_) to join rest of object name back together
-                if len(dst_svc) == 2:
-                    ace[7] = dst_svc[1]
-                else:
-                    ace[7] = '_'.join(dst_svc[1:])
-
-            # 3f. ACE: Only ACE has the negate field, adds NOT to any source, destination, or services that are negated
+            #3e. ACE: Only ACE has the negate field, adds NOT to any source, destination, or services that are negated
             if len(ace) == 14:
                 negate(ace)
 
-#             # 3f. From unixtime (posix) gets human readable time and splits date and time into separate elements
+            # 3f. From unixtime (posix) gets human readable time and splits date and time into separate elements
             if ace[9] == None:
                 ace[9] = ''
                 ace.insert(10, '')
@@ -265,22 +280,30 @@ def format_acl(fw, acl_brief, acl_expanded):
             else:
                 ace[11] = ''
 
-    # 3h. "show-as-ranges" with negated fields (dst, src or svc) makes them blank, this gets those values from acl list
+    # # 3h. "show-as-ranges" with negated dst or src fields are blank, therefore need to get those values from acl list
     for rule, rule_exp in zip(acl,acl_exp):
+        # tmp_rule = []
         if rule[12] == True:
             rule_exp[4] = rule[4]
         if rule[13] == True:
             rule_exp[6] = rule[6]
-        if rule[14] == True:
-            rule_exp[7] = rule[7]
 
     # CREATE ACE: Creates a separate ace entry for each unique source/destination rule before creating ACL and adding it to the final_acl list
     for acl_item in [acl, acl_exp]:
         temp_acl = []                # Has to be here so is cleared at each iteration
         for ace in acl_item:
+            # Loops through source, destination  and service lists and spliting out into all variations
             for src in ace[4]:
                 for dst in ace[6]:
-                    temp_acl.append([ace[0], ace[1], ace[2], ace[3], src, 'any_port', dst, ace[7], ace[8], ace[9], ace[10], ace[11]])
+                    for each_prot_svc in ace[7]:
+                        # Splits the dst_svc into protocol and service
+                        prot_svc = each_prot_svc.split('_')
+                        # Needed incase object names have underscore in them (_) to join rest of object name back together
+                        if len(prot_svc) == 2:
+                            svc = prot_svc[1]
+                        else:
+                            svc = '_'.join(prot_svc[1:])
+                        temp_acl.append([ace[0], ace[1], ace[2], prot_svc[0], src, 'any_port', dst, svc, ace[8], ace[9], ace[10], ace[11]])
         final_acl.append(temp_acl)
 
     # OUTPUT: Returns a dictionary of {device_ip_acl: non_expanded_acl, device_ip_exp_acl: expanded_acl} with every line of each being in the format:

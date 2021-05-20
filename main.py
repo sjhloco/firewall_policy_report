@@ -2,7 +2,6 @@
 
 import argparse
 from getpass import getpass
-from os.path import expanduser
 import os
 from datetime import date
 from collections import defaultdict
@@ -12,19 +11,19 @@ from rich.theme import Theme
 from rich.progress import track
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from openpyxl.styles import NamedStyle, Font, colors, PatternFill, Alignment
+from openpyxl.styles import Font, colors, PatternFill, Alignment
 from openpyxl.styles.differential import DifferentialStyle
 from openpyxl.formatting.rule import Rule
 
 
 ######################## Variables to change dependant on environment ########################
 # Directory and filename where saves MS and device prefixes to. By default is the users home directory
-directory = expanduser("~")
+directory = os.path.dirname(__file__)
 report_name = 'ACLreport_' + date.today().strftime('%Y%m%d')
 input_file = 'input.yml'
 # Header names and columns widths for the XL sheet
-header = {'ACL Name':45, 'Line Number':17, 'Access':11, 'Protocol':16, 'Source Address':31, 'Source Service':14, 'Destination Address':31,
-          'Destination Service':35, 'Hit Count':14, 'Date Last Hit':17, 'Time Last Hit':17, 'State':10}
+header = {'Policy/ACL Name':25, 'Line Number':17, 'Access':18, 'Protocol':12, 'Source Address':23, 'Source Service':14, 'Destination Address':23,
+          'Destination Service':26, 'Hit Count':14, 'Date Last Hit':17, 'Time Last Hit':17, 'State':10}
 
 
 ################################## Multi-Use functions ##################################
@@ -151,7 +150,8 @@ def logon(fw_types, fw_cred):
         if fw_cred.get(each_type) != None:
             # Import FW type module as a dynamic variable, this allows the module to be specified using string from 'fw_types' list
             import_fw.update({each_type: __import__(each_type)})
-            for each_fw in track(fw_cred[each_type], 'Testing username/password and device connectivity'):
+            # for each_fw in fw_cred[each_type]:
+            for each_fw in track(fw_cred[each_type], 'Testing ' + each_type + ' username/password and device connectivity'):
                 dev_ip = list(each_fw.keys())[0]
                 fw_sid[each_type][dev_ip] = import_fw[each_type].login(dev_ip, list(each_fw.values())[0][0], list(each_fw.values())[0][1])
 
@@ -244,14 +244,14 @@ def create_xls(args, acl):
 
     wb.remove(wb['Sheet'])
     wb.save(filename)
-    rc.print(':white_heavy_check_mark: Firewall access rule report [b green]{}[/b green] has been created'.format(filename))
+    rc.print(':white_heavy_check_mark: Firewall policy report [b blue]{}[/b blue] has been created'.format(filename))
 
 
 ###################################### Run the scripts ######################################
 def main():
     global rc
     rc = Console(theme=Theme({"repr.str": "black", "repr.ipv4": "black", "repr.number": "black"}))
-    rc.print('\n' + '=' * 30, '[b purple4]Firewall Access Rule Report v0.1[/b purple4]', '=' * 30)
+    rc.print('\n' + '=' * 30, '[b purple4]Firewall Policy Report v0.1[/b purple4]', '=' * 30)
 
     # Device types to loop through, match name of the device type python files (asa.py, ckp.py)
     fw_types = ['asa', 'ckp']
@@ -270,8 +270,10 @@ def main():
     for fw_type, details in fw_sid.items():
         for fw, sid in details.items():
             colour = toggle_colour()
-            rc.print('[{}]Gathering and formatting ACL information from the {} [i]{}[/i], be patient can take a while...[/{}]'.format(colour, fw_type, fw, colour))
+            rc.print('[{}]Gathering and formatting ACL information from the {} [i]{}[/i], be patient it can take a while...[/{}]'.format(colour, fw_type, fw, colour))
             acl_brief, acl_expanded = import_fw[fw_type].get_acls(fw, sid)
+
+            import_fw[fw_type].format_acl(fw, acl_brief, acl_expanded)
             acl.update(import_fw[fw_type].format_acl(fw, acl_brief, acl_expanded))
 
     # 5. Build the Excel worksheet, a separate sheet per device
