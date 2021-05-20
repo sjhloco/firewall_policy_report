@@ -20,3 +20,4 @@ ckp:
   ## List of Checkpoints, any password set here would override global and CKP passwords ##
   fw:
   - ip_name: dc1-ckp
+

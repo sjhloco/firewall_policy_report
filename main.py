@@ -91,7 +91,7 @@ def validate_creds(args, fw_types):
     if not os.path.exists(args['location']):
         rc.print("The directory [i cyan]'{}'[/i cyan] does not exist, do you want to create it?".format(args['location']))
         while location_exist == "no":
-            answer = rc.input('[b green3]y or n: [/b green3]')
+            answer = rc.input('[b green3]y or n: [/b green3]').lower()
             if answer == 'y':
                 os.makedirs(args['location'])
             elif answer == 'n':
@@ -106,7 +106,7 @@ def validate_creds(args, fw_types):
     while file_exist == "yes":
         if os.path.exists(os.path.join(args['location'], args['name'] + ".xlsx")):
             rc.print("The output file [i cyan]{}[/i cyan] already exist, do you want to overwrite it?".format(args['name'] + ".xlsx"))
-            answer = rc.input('[b green3]y or n: [/b green3]')
+            answer = rc.input('[b green3]y or n: [/b green3]').lower()
             if answer == 'n':
                 args['name'] = input("Please enter a new name for the output file: ")
             elif answer == 'y':
