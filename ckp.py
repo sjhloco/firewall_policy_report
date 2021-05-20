@@ -81,15 +81,19 @@ def get_acls(dev, sid):
     for policy in policy_offset:
         # (Start rule number, total number rules, amount to offset the start by each iteration)
         for offset in range(0, policy['num_rules'], 500):
+        # for offset in range(1,4,3):
             # Limit is the max number of rules returned and offset the number of rules to skip. To get just rules 11 to 25 use range(10,25,15) and "limit": 15
             payload = {"offset": offset, "limit": 500, "name": policy['name'], "show-hits": True, "use-object-dictionary": False}
+            # payload = {"offset": offset, "limit": 15, "name": policy['name'], "show-hits": True, "use-object-dictionary": False}
             output = api_call(dev , "show-access-rulebase", payload, sid)
             acl_brief.append(output)
 
     # 2d. ACL_EXP: Using offset tuple get list of all the rules within each policy, with all groups and objects expanded as ranges
     for policy in policy_offset:
+        # for offset in range(1,4,3):
         for offset in range(0, policy['num_rules'], 20):
             payload = {"offset": offset, "limit": 20, "name": policy['name'], "show-as-ranges": True, "show-hits": True,  "use-object-dictionary": False}
+            # payload = {"offset": offset, "limit": 15, "name": policy['name'], "show-as-ranges": True, "show-hits": True,  "use-object-dictionary": False}
             output = api_call(dev , "show-access-rulebase", payload, sid)
             acl_expanded.append(output)
 
@@ -207,26 +211,45 @@ def format_acl(fw, acl_brief, acl_expanded):
     acl, acl_exp, final_acl = ([] for i in range(3))
     #3a. Loops through each section and set of 500 rules (non-expanded ACEs) to create new list of lists of only the fields required
     for policy in acl_brief:
-        # for section in policy['rulebase']:
-            # for rule in section['rulebase']:
         for rule in policy['rulebase']:
-            # For nested inline policies replaces action with name of nested policy
-            if rule.get('inline-layer') != None:
-                rule['action']['name'] = 'POLICY_' + rule['inline-layer']['name']
-            acl.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source'], 'any_port',
-                                    rule['destination'], rule['service'], rule['hits']['value'], rule['hits'].get('last-date'),
-                                    rule['enabled'], rule['source-negate'], rule['destination-negate'], rule['service-negate']])
+            # If it has access-sections then is another layer of nested rulebase
+            if rule['type'] == 'access-section':
+                for rule in rule['rulebase']:
+                    # For nested inline policies replaces action with name of nested policy
+                    if rule.get('inline-layer') != None:
+                        rule['action']['name'] = 'POLICY_' + rule['inline-layer']['name']
+                    acl.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source'], 'any_port',
+                                rule['destination'], rule['service'], rule['hits']['value'], rule['hits'].get('last-date'),
+                                rule['enabled'], rule['source-negate'], rule['destination-negate'], rule['service-negate']])
+            # If it does not have an access-sections no more rulebase nesting
+            elif rule['type'] == 'access-rule':
+                # For nested inline policies replaces action with name of nested policy
+                if rule.get('inline-layer') != None:
+                    rule['action']['name'] = 'POLICY_' + rule['inline-layer']['name']
+                acl.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source'], 'any_port',
+                            rule['destination'], rule['service'], rule['hits']['value'], rule['hits'].get('last-date'),
+                            rule['enabled'], rule['source-negate'], rule['destination-negate'], rule['service-negate']])
+
     #3b. Loops through each section and set of 20 rules (expanded ACEs) to create new list of lists of only the fields required
     for policy in acl_expanded:
-        # for section in policy['rulebase']:
-            # for rule in section['rulebase']:
         for rule in policy['rulebase']:
-            # For nested inline policies replaces action with name of the nested policy
-            if rule.get('inline-layer') != None:
-                rule['action']['name'] = 'POLICY_' + rule['inline-layer']['name']
-            acl_exp.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source-ranges'],
+            # If it has access-sections then is another layer of nested rulebase
+            if rule['type'] == 'access-section':
+                for rule in rule['rulebase']:
+                    # For nested inline policies replaces action with name of the nested policy
+                    if rule.get('inline-layer') != None:
+                        rule['action']['name'] = 'POLICY_' + rule['inline-layer']['name']
+                    acl_exp.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source-ranges'],
                                     'any_port', rule['destination-ranges'], rule['service-ranges'], rule['hits']['value'],
                                     rule['hits'].get('last-date'), rule['enabled']])
+            # If it does not have an access-sections no more rulebase nesting
+            elif rule['type'] == 'access-rule':
+            # For nested inline policies replaces action with name of the nested policy
+                if rule.get('inline-layer') != None:
+                    rule['action']['name'] = 'POLICY_' + rule['inline-layer']['name']
+                acl_exp.append([policy['name'], rule['rule-number'], rule['action']['name'], 'protocol', rule['source-ranges'],
+                                'any_port', rule['destination-ranges'], rule['service-ranges'], rule['hits']['value'],
+                                rule['hits'].get('last-date'), rule['enabled']])
 
     # Loops though both rulebases to normalise the data (categorize object names, simplify ranges, timestamp, etc)
     for acl_item in [acl, acl_exp]:
