@@ -2,7 +2,7 @@
 
 Connects to the firewalls and gathers the access-lists to produce an Excel worksheet report of the policy rules and their usage (hits).
 
-The idea behind this project is to have a framework built in a modular manner to create the report based on a standard input data model. By building it in this manner the specific firewall type configuration is abstracted from the main script making it easier to add different firewall types in the future. Each firewall type has a separate python script to log into the device, scrape the data and do the number crunching to return the data model.
+The idea behind this project is to have a framework built in a modular manner to create the report based on a standard input data model. By building it in this manner the specific firewall type configuration is abstracted from the main script making it easier to add different firewall types in the future. Each firewall type has a separate python script consisting of functions to log into the device, scrape the data and do the number crunching to create the data model that is returned.
 
 - Supports ASA (9.xx), Checkpoint (R80.20). ASAs use SSH (*Netmiko*) and Checkpoints API (*Requests*) to gather the information
 - The input yaml file contains dictionaries of the firewall types with hierarchical username and passwords
