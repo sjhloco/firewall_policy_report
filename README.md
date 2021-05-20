@@ -139,7 +139,7 @@ The firewall types are in individual python files that are dynamically imported 
 The new firewall type python file has to have the following functions and arguments with each function returning data in the desired format.
 
 ***login(fw, user, pword)***\
-Uses try/except to open a connection to the firewall using the defined arguments either. If the connection is successful returns a tuple of (True, SID) with the SID (session ID) used for future operations to run commands on the firewall. If the connection fails it returns a tuple of (False, err_msg) with the message being a description of the error. `True` and `False` are used by the *main.py* script determine whether it was successful (True) or not (False). Any connection failure causes all other connections to be closed and the script to fail.
+Uses `try/except` to open a connection to the firewall. If the connection is successful it returns a tuple of *(True, SID)* with the SID (session ID) used for future operations to run commands on the firewall. If the connection fails it returns a tuple of *(False, err_msg)* with the message being a description of the error. `True` and `False` are used by *main.py* to determine whether it was successful (True) or not (False). Any connection failure causes all other connections to be closed and the script to gracefully fail.\
 *Return: (True, sid) or (False, error_message)*
 
 ***logoff(fw, sid)***\
