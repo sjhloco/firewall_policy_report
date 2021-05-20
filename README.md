@@ -139,21 +139,21 @@ The firewall types are in individual python files that are dynamically imported 
 The new firewall type python file has to have the following functions and arguments with each function returning data in the desired format.
 
 **login(fw, user, pword)**\
-Uses `try/except` to open a connection to the firewall. If the connection is successful it returns a tuple of *(True, SID)* with the SID (session ID) used for future operations to run commands on the firewall. If the connection fails it returns a tuple of *(False, err_msg)* with the message being a description of the error. `True` and `False` are used by *main.py* to determine whether it was successful (True) or not (False). Any connection failure causes all other connections to be closed and the script to gracefully fail.\
+Uses `try/except` to open a connection to the firewall. If the connection is successful it returns the tuple *(True, SID)* with the SID (session ID) used for future operations to run commands on the firewall. If the connection fails it returns the tuple *(False, err_msg)* with the message being a description of the error. `True` and `False` are used by *main.py* to determine whether the connection was successful (True) or not (False). Any connection failure causes all other connections to be closed and the script to gracefully fail.\
 ***Return:*** *(True, sid) or (False, error_message)*
 
-***logoff(fw, sid)***\
-Gracefully closes connections either at the end of the script or to close all connections if any firewall connection fails.
-*Return: Nothing*
+**logoff(fw, sid)**\
+Gracefully closes connections either at the end of the script or to close all connections if any firewall connection fails.\
+***Return:*** *Nothing*
 
-***get_acls(fw, sid)***\
-Uses the SID (session ID) to connect to the device and run commands to get the ACL content returning back two lists to *main.py*, *acl_brief* and *acl_expanded*. What is in these lists depends on the firewall type capabilities. For example, ASA is ACL hashes and the extended ACl whereas Checkpoint is standard ACL and ACL with expanded ranges. These are firewall type specific at this point as are only used in next function.
-*Return: acl_brief, acl_expanded*
+**get_acls(fw, sid)**\
+Uses the SID (session ID) to connect to the device and run commands to get the ACL content returning back two lists to *main.py*, *acl_brief* and *acl_expanded*. What is in these lists depends on the firewall type capabilities. For example, ASA is ACL hashes and the extended ACl whereas Checkpoint is standard ACL and ACL with expanded ranges. These are firewall type specific at this point as are only used in next function.\
+***Return:*** *acl_brief, acl_expanded*
 
-***format_acl(fw, acl_brief, acl_expanded)***\
-Takes the ACL data gathered from the devices and runs it through various other functions to normalise it and produce two lists, ACL and Expanded_ACL (object/group names converted to IP addresses/networks). Each each list element is an ACE in the following format ready to be made into columns in the XL sheet.
-`[name, num, permit/deny, protocol, src_ip/pfx, src_port, dst_ip/pfx, dst_port, hitcnt, last_hit_date, last_hit_time, state]`
-*Return: {fwip_acl: [non_expanded_acl], fw_ip_exp_acl: [expanded_acl]}*
+**format_acl(fw, acl_brief, acl_expanded)**\
+Takes the ACL data gathered from the devices and runs it through various other functions to normalise it and produce two lists, ACL and Expanded_ACL (object/group names converted to IP addresses/networks). Each each list element is an ACE in the following format ready to be made into columns in the XL sheet.\
+`[name, num, permit/deny, protocol, src_ip/pfx, src_port, dst_ip/pfx, dst_port, hitcnt, last_hit_date, last_hit_time, state]`\
+***Return:*** *{fwip_acl: [non_expanded_acl], fw_ip_exp_acl: [expanded_acl]}*
 
 *new_fw_type_template.py* is a skelton template of these functions for creating new firewall types.
 
