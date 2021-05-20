@@ -41,14 +41,11 @@ Enable SSH access over the interface and from networks that the script will be r
 
 #### Checkpoint
 
-Under *Manage & Settings >> Blades >> Management API* enable the API and allow  *'All IP addresses'* and push the policy. Finally from the manager CLI restart the API process `api restart`
+Under *Manage & Settings >> Blades >> Management API* enable the API, allow *'All IP addresses'* and push the policy. Finally from the manager CLI restart the API process `api restart`
 
 ## Input File
 
-Each firewall IP address or hostname is defined in a list under a dictionary for that firewall type.\
-The username and/or password are hierarchical and can be set globally for all firewalls, for each type of firewall or for each individual firewall.\
-Username and/or password only need defining once and are completely independent of each other meaning they can be defined in different locations.\
-Individual firewall settings override firewall type settings and firewall type settings overrides global settings.
+Each firewall IP address or hostname is defined in a list under a dictionary for that firewall type. The username and/or password are hierarchical and can be set globally for all firewalls, for each type of firewall or for each individual firewall. They only needs defining once and are completely independent of each other. Individual firewall username and/or password override firewall type and firewall type override global settings.
 
 ```yaml
 user: global_username
